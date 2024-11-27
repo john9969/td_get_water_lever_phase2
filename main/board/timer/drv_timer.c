@@ -2,7 +2,7 @@
  * drv_timer.c
  *
  *  Created on: Aug 21, 2022
- *      Author: Giangnv
+ *      Author: tuanndm
  */
 
 #include "drv_timer.h"

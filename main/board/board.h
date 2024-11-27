@@ -2,7 +2,7 @@
  * board.h
  *
  *  Created on: Dec 14, 2022
- *      Author: MinhNhan
+ *      Author: tuanndm
  */
 
 #ifndef MAIN_BOARD_BOARD_H_

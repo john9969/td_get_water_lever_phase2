@@ -2,13 +2,12 @@
  * board.c
  *
  *  Created on: Dec 14, 2022
- *      Author: MinhNhan
+ *      Author: tuanndm
  */
 
 #include "board.h"
 #include "esp_random.h"
 #include "stdio.h"
-#include "74hc595.h"
 #include "esp_netif.h"
 #include "esp_err.h"
 #include "esp_event.h"

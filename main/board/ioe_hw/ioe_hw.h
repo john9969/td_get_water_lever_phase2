@@ -2,7 +2,7 @@
  * ioe_hw.h
  *
  *  Created on: Dec 15, 2022
- *      Author: quangnd
+ *      Author: tuanndm
  */
 
 #ifndef MAIN_BOARD_IOE_HW_IOE_HW_H_

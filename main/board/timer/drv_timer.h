@@ -2,7 +2,7 @@
  * drv_timer.h
  *
  *  Created on: Aug 21, 2022
- *      Author: Giangnv
+ *      Author: tuanndm
  */
 
 #ifndef DRIVERS_TIMER_DRV_TIMER_H_

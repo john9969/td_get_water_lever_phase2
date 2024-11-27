@@ -1,8 +1,8 @@
 /*
  * app_config.h
  *
- *  Created on: Nov 23, 2022
- *      Author: quangnd
+ *  Created on: 2024//11/27
+ *      Author: tuanndm
  */
 
 #ifndef MAIN_APP_APP_CONFIG_H_
@@ -14,8 +14,8 @@
 
 #define MAX_BATTERY_CABINET_NUM										MAX_CABINET
 #define STATION_CHARGER_NUM											(2)
-#define MBS_SERIAL_NUMBER "101MB1N000001"
-#define CONFIG_BROKER_URL "mqtt://hub.selex.vn"//"mqtt://mqtt.eclipseprojects.io"
+#define MBS_SERIAL_NUMBER ""
+#define CONFIG_BROKER_URL "https://"
 #define MQTT_ENABLE 1
 #define MQTT_TIME_PUBLIC 5
 
