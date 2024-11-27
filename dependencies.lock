@@ -1,0 +1,15 @@
+dependencies:
+  espressif/esp_modem:
+    component_hash: b5c8004b70c6c1f713f76af2633fb85b138b8ea09dcd1694bf3f694fc158b885
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 1.0.0
+  idf:
+    component_hash: null
+    source:
+      type: idf
+    version: 5.2.1
+manifest_hash: 0908ad2a56bd77defe396a8e61a3e116d3a5476714bed3121ef2eae2e64c44ba
+target: esp32
+version: 1.0.0

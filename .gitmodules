@@ -1,0 +1,3 @@
+[submodule "main/service/canopen_clib"]
+	path = main/service/canopen_clib
+	url = git@github.com:Selex-Motors/canopen-clib.git
