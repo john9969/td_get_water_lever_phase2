@@ -12,7 +12,7 @@
 //static const char *TAG = "BUTTON";
 
 #define BUTTON_TIME_DELAY 10
-#define TIME_RESET_WIFI_INFO 5000
+#define TIME_GET_INTO_CONFIG_MODE 5000
 static void button_task(void* arg);
 #define MAX_TIME_DEBONE 1000
 #define MAX_TIME_HOLD 10
@@ -45,7 +45,7 @@ static void button_task(void* arg){
 		else{
 			p_button->time = 0;
 		}
-		if(p_button->time >= TIME_RESET_WIFI_INFO){
+		if(p_button->time >= TIME_GET_INTO_CONFIG_MODE{
 			wifi_clear_info();
 			esp_restart();
 		}

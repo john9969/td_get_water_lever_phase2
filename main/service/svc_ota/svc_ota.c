@@ -22,11 +22,8 @@
 
 #include "cJSON.h"
 #include "driver/gpio.h"
-
 #include "common.h"
 #include "svc_ota.h"
-#include "mqtt.h"
-#include "mbs_app/mbs_app.h"
 
 #define OTA_DBG_ENA	//add to pre-compiler
 
@@ -254,64 +251,3 @@ void svc_ota_update(const char *url,char* id,char *ver){
 	xTaskCreate(ota_update_task,"ota_update",1024*4,(void*)&mqtt_ota_config,configMAX_PRIORITIES,NULL);
 }
 
-
-static void ota_update_task(void *arg){
-	ota_config_t *p_ota_config = (ota_config_t*)arg;
-	char* url = malloc(LEN_URL+1);
-
-	memset(url,0,LEN_URL+1);
-	strcpy(url,p_ota_config->url_src);
-
-	ESP_LOGI(TAG,"url %s",p_ota_config->url_src);
-	if(msg_id != NULL)
-		ESP_LOGI(TAG,"msg_id %s",msg_id);
-	if(version != NULL)
-		ESP_LOGI(TAG,"version %s",version);
-
-	esp_http_client_config_t ota_update_client_config = {
-			.url = url, .timeout_ms =
-					20000, .keep_alive_enable =
-			true, };
-
-	OTA_PRINT(
-			"downloading and installing new firmware (%s)...\n",
-			url);
-
-	esp_https_ota_config_t https_ota_update_cfg = {
-			.http_config = &ota_update_client_config,
-			.http_client_init_cb =
-					NULL};
-	esp_err_t ret = esp_https_ota(&https_ota_update_cfg);
-
-	cJSON *json = cJSON_CreateObject();
-	cJSON *data = cJSON_CreateObject();
-	if(msg_id != NULL)
-		cJSON_AddStringToObject(json, "msg_id", msg_id);
-	cJSON_AddStringToObject(json, "type", "UPGRADING_STATUS");
-	if(version != NULL)
-		cJSON_AddStringToObject(data, "version", version);
-
-	if (ret == ESP_OK) {
-		cJSON_AddBoolToObject(data, "status",true);
-		cJSON_AddNumberToObject(data, "error",0);
-		cJSON_AddItemToObject(json, "data",data);
-		mqtt_public(selex_mbs.pub_upgrading_status,cJSON_Print(json), strlen(cJSON_Print(json)), 1, 0);
-		vTaskDelay(pdMS_TO_TICKS(5000));
-		cJSON_Delete(json);
-		OTA_PRINT("OTA OK, restarting...\n");
-		esp_restart();
-	} else {
-		cJSON_AddBoolToObject(data, "status",false);
-		cJSON_AddNumberToObject(data, "error",1);
-		cJSON_AddItemToObject(json, "data",data);
-		mqtt_public(selex_mbs.pub_upgrading_status,cJSON_Print(json), strlen(cJSON_Print(json)), 1, 0);
-		vTaskDelay(pdMS_TO_TICKS(5000));
-		cJSON_Delete(json);
-		OTA_DBG(TAG, "OTA failed...(%s)\n",esp_err_to_name(ret));
-	}
-
-	mbs_set_state(&selex_mbs,MBS_ST_NORMAL);
-
-	free(url);
-	vTaskDelete(NULL);
-}

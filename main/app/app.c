@@ -7,28 +7,23 @@
 
 
 
-#include <mbs/mbs.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <mqtt/mqtt.h>
+#include <string.h>
 #include "app.h"
-#include "mqtt_data.h"
 #include "app_config.h"
-#include "cli_task.h"
-#include "sntp_sv.h"
-#include "mbs_app/mbs_app.h"
-#include "ota_task.h"
-//#include "http_server.h"
 #include "storage.h"
 #include "wifi_app/wifi_app.h"
 #include "freertos/semphr.h"
-#include "ota_bms.h"
-#include "lte_app.h"
 #include "esp_system.h"
 #include "esp_log.h"
+#include "measuring_app.h"
+#include "led.h"
 SemaphoreHandle_t internet_mutex;
 extern EventGroupHandle_t event_group;
+
+EventGroupHandle_t event_group;
 
 static const char *TAG = "App";
 
@@ -42,19 +37,12 @@ void app_init(void){
 	}
 
 	event_group = xEventGroupCreate();
-#if USING_LTE
-	lte_app_init();
-	lte_set_state(LTE_ST_NETWORK);
-#endif
+
 
 #if USING_WIFI
 	wifi_app_init();
 #endif
 	internet_mutex = xSemaphoreCreateMutex();
-	cli_task_init();
-#if ENABLE_SNTP_SV
-	sntp_sv_init();
-#endif
 #if ENABLE_HTTP_SERVER_SV
 	http_server_init();
 #endif
@@ -62,20 +50,21 @@ void app_init(void){
 #if ENABLE_OTA_SV
 	ota_task_init();
 #endif
-	mbs_app_init();
 
 	storage_init();
-	bms_ota_init();
+
+	test_led(&led_control);
 }
 
 #define MAX_LENGTH_VER 50
 static char version[MAX_LENGTH_VER];
-
+#if ENABLE_OTA
 char* app_get_version(){
 	memset(version,0,MAX_LENGTH_VER);
 	sprintf(version,"ver%04d",(int)(APP_VERSION*10));
 	return version;
 }
+#endif
 char reset_reason[125];
 char* device_reset_detected(int event){
 	memset(reset_reason,0,125);

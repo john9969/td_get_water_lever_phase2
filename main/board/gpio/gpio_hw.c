@@ -18,7 +18,7 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 
-void gpio_init(MBS_GPIO *gpio){
+void gpio_init(GPIO *gpio){
     //zero-initialize the config structure.
     gpio_config_t io_conf = {};
     //disable interrupt
@@ -33,42 +33,31 @@ void gpio_init(MBS_GPIO *gpio){
     //bit mask of the pins that you want to set,e.g.GPIO18/19
     io_conf.pin_bit_mask = (1ULL<<gpio->pin);
     //disable pull-down mode
-    io_conf.pull_down_en = 0;
-    //disable pull-up mode
-    io_conf.pull_up_en = 0;
+    if(gpio->pull_en == PULL_UP_EN){
+    	io_conf.pull_up_en = 1;
+    }
+    else if(gpio->pull_en == PULL_DOWN_EN){
+    	io_conf.pull_down_en = 1;
+    }
+    else{
+    	io_conf.pull_down_en = 0;
+    	io_conf.pull_up_en = 0;
+    }
     //configure GPIO with the given settings
     gpio_config(&io_conf);
 }
-GPIO_PIN_LEVEL gpio_read(MBS_GPIO *gpio){
+GPIO_PIN_LEVEL gpio_read(GPIO *gpio){
 	gpio->level = gpio_get_level(gpio->pin);
 	return gpio->level;
 }
-void gpio_pin_write(MBS_GPIO *gpio, GPIO_PIN_LEVEL level){
+void gpio_pin_write(GPIO *gpio, GPIO_PIN_LEVEL level){
 	gpio->level = level;
 	gpio_set_level(gpio->pin,gpio->level);
 }
-void gpio_pin_toggle(MBS_GPIO *gpio){
+void gpio_pin_toggle(GPIO *gpio){
 	gpio->level == GPIO_PIN_SET ? gpio_pin_write(gpio,GPIO_PIN_RESET):gpio_pin_write(gpio,GPIO_PIN_SET);
 }
-MBS_GPIO gpio_warning = {.pin = WARNING_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO};
-/*
- *
- * Using V1.0
-MBS_GPIO gpio_nodeid[8] = {
-		{.pin = Node_1_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-		{.pin = Node_2_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-		{.pin = Node_3_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-		{.pin = Node_4_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-		{.pin = Node_5_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-		{.pin = Node_6_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-		{.pin = Node_7_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-		{.pin = Node_8_GPIO,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO},
-};*/
-MBS_GPIO led_wifi = { .pin = WIFI_LED_PIN, .mode = GPIO_OUTPUT, .pull_en =
-		PULL_UP_NO };
-MBS_GPIO button_gpio = {.pin = BUTTON_GPIO,.mode = GPIO_INPUT,.pull_en = PULL_UP_EN};
-MBS_GPIO can_stb = {.pin = CAN_STB,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO};
-MBS_GPIO lte_rs_gpio = {.pin = LTE_RESET,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO};
-MBS_GPIO lte_poweron_gpio = {.pin = LTE_POWERON,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO};
 
-MBS_GPIO hc595_data_pin = {.pin = LED_DATA,.mode = GPIO_OUTPUT,.pull_en = PULL_UP_NO};
+GPIO led_signal = { .pin = LED_SIGNAL_PIN, .mode = GPIO_OUTPUT, .pull_en = PULL_UP_DOWN_NO };
+GPIO button_gpio = { .pin = BUTTON_GPIO_PIN, .mode = GPIO_INPUT, .pull_en = PULL_UP_EN };
+GPIO wifi_poweron_gpio = { .pin = WIFI_POWERON_PIN, .mode = GPIO_OUTPUT, .pull_en = PULL_UP_EN };

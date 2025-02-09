@@ -11,28 +11,17 @@
 #include "esp_netif.h"
 #include "esp_err.h"
 #include "esp_event.h"
-char auther_str[50] = {0};
+
+char auther_str[50] = {NULL};
+
 
 void board_init(void){
+	esp_err_t err =  pcf8563_init_desc(&pcf8563_dev, I2C_NUM_0, SDA_GPIO_NUM, SCL_GPIO_NUM);
+	if (err != ESP_OK) {
+		// log_e("Could not initialize PCF8563 device descriptor");
+	}
 	flash_init();
 	drv_timer_init();
-	//HAL_UART_Init(&huart1);
-	ioe_hw_init(&ioe_hw);
-	gpio_init(&button_gpio);
-	gpio_init(&gpio_warning);
-	gpio_init(&led_wifi);
-	gpio_init(&can_stb);
-	gpio_init(&lte_poweron_gpio);
-	gpio_init(&lte_rs_gpio);
-
-/*
- * Using V1.0
- *
-	for(uint16_t i = 0;i<8;i++)
-		gpio_init(&gpio_nodeid[i]);
-*/
-	hc595_init(&node_id_io,NODE_ID_DATA,NODE_ID_SCK,NODE_ID_LATCH,1);
-	hc595_init(&led_io,LED_DATA,LED_SCK,LED_LATCH,2);
 	int size = flash_read_str("auther", auther_str);
 	if(size == -1){
 		uint32_t auther = esp_random();
@@ -40,9 +29,12 @@ void board_init(void){
 		sprintf(auther_str,"%08X",(unsigned int)auther);
 		flash_write_str("auther",auther_str);
 	}
+	gpio_init(&led_signal);
+	gpio_init(&button_gpio);
+	gpio_init(&wifi_poweron_gpio);
 }
+
 void board_deinit(void){
-	can_hardware_deinit();
 }
 
 

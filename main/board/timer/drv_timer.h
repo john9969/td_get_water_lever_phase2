@@ -14,6 +14,11 @@
 #include "esp_log.h"
 #include "esp_sleep.h"
 
+#include "esp_system.h" 
+#include "esp_log.h" 
+#include "driver/rtc_io.h"
+#include "driver/periph_ctrl.h"
+#include "driver/rtc_cntl.h"
 
 typedef enum
 {

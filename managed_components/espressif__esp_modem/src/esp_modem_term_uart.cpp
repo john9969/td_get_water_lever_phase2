@@ -18,7 +18,7 @@ uart_resource::~uart_resource()
 }
 
 uart_resource::uart_resource(const esp_modem_uart_term_config *config, QueueHandle_t *event_queue, int fd)
-    : port(-1)
+    : port((uart_port_t)-1)
 {
     esp_err_t res;
 
