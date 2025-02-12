@@ -69,6 +69,7 @@ void led_control_task(void *arg) {
 void led_deinit(void * arx) {
     led_control_t * p_led = (led_control_t*) arx;
     vTaskDelete(p_led->led_task);
+    p_led->led_task = NULL;
 } 
 
 bool set_led_state(void * arx, led_state_t state, int times) {
@@ -96,7 +97,7 @@ void signal_new_error(void * arg) {
 
 void led_init(void * arx) {
     led_control_t * p_led = (led_control_t*) arx;    
-    xTaskCreate(led_control_task, "LED Control Task", 1024, p_led, 1, p_led->led_task);
+    xTaskCreate(led_control_task, "LED Control Task", 1024, p_led, 1, &(p_led->led_task));
 }
 #if TEST_LED
 void test_led(void * arx) {
@@ -106,23 +107,23 @@ void test_led(void * arx) {
     led_init(p_led);
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    ESP_LOGI(TAG_TEST, "Setting LED to ON");
-    set_led_state(p_led, LED_ON, -1);
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    // ESP_LOGI(TAG_TEST, "Setting LED to ON");
+    // set_led_state(p_led, LED_ON, -1);
+    // vTaskDelay(pdMS_TO_TICKS(5000));
 
-    ESP_LOGI(TAG_TEST, "Setting LED to OFF");
-    if(set_led_state(p_led, LED_OFF, -1)){
-        ESP_LOGI(TAG_TEST, "LED OFF Success");
-    }
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    // ESP_LOGI(TAG_TEST, "Setting LED to OFF");
+    // if(set_led_state(p_led, LED_OFF, -1)){
+    //     ESP_LOGI(TAG_TEST, "LED OFF Success");
+    // }
+    // vTaskDelay(pdMS_TO_TICKS(5000));
 
-    ESP_LOGI(TAG_TEST, "Setting LED to BLINK 1000MS 5 times");
-    set_led_state(p_led, LED_BLINK_1000MS, 5);
-    vTaskDelay(pdMS_TO_TICKS(10000));
+    // ESP_LOGI(TAG_TEST, "Setting LED to BLINK 1000MS 5 times");
+    // set_led_state(p_led, LED_BLINK_1000MS, 5);
+    // vTaskDelay(pdMS_TO_TICKS(10000));
 
-    ESP_LOGI(TAG_TEST, "Setting LED to BLINK 3000MS 4 times");
-    set_led_state(p_led, LED_BLINK_3000MS, 4);
-    vTaskDelay(pdMS_TO_TICKS(20000));
+    // ESP_LOGI(TAG_TEST, "Setting LED to BLINK 3000MS 4 times");
+    // set_led_state(p_led, LED_BLINK_3000MS, 4);
+    // vTaskDelay(pdMS_TO_TICKS(20000));
 
     // ESP_LOGI(TAG_TEST, "Setting LED to BLINK ERR Num 5");
     // set_led_state(p_led, LED_BLINK_ERR, 5);
@@ -144,5 +145,6 @@ void test_led(void * arx) {
 led_control_t led_control = { 
     .led_gpio = &led_signal, 
     .state = LED_OFF, 
-    .times = 0
+    .times = 0,
+    .led_task = NULL
 };

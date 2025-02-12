@@ -121,5 +121,5 @@ static void uart_event_task(void *pvParameters){
     vTaskDelete(NULL);
 }
 
-UART_Typedef huart1 = {.databit = DATA_8,.parity = PARITY_NONE,.pin_tx =17,.pin_rx =16,.port = 1,.baurate = 115200};
-UART_Typedef huart2 = {.databit = DATA_8,.parity = PARITY_NONE,.pin_tx =4,.pin_rx =5,.port = 2,.baurate = 115200};
+UART_Typedef huart1= {.databit = DATA_8,.parity = PARITY_NONE,.pin_tx =18,.pin_rx =19,.port = 1,.baurate = 115200};
+UART_Typedef huart2 = {.databit = DATA_8,.parity = PARITY_NONE,.pin_tx = 4,.pin_rx =5,.port = 2,.baurate = 115200};

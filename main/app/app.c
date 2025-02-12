@@ -19,13 +19,25 @@
 #include "esp_system.h"
 #include "esp_log.h"
 #include "measuring_app.h"
+#include "config_app.h"
 #include "led.h"
+#include "button.h"
+
+static bool has_config = false;
+void button_callback(Button *p_button);
+
 SemaphoreHandle_t internet_mutex;
 extern EventGroupHandle_t event_group;
 
 EventGroupHandle_t event_group;
 
 static const char *TAG = "App";
+void button_callback(void * arg);
+void app_pprocess(void){
+	//MeasuringApp * app = (MeasuringApp *)arg;
+	//app->state = MEASURING_APP_STATE_INIT;
+	ESP_LOGI(TAG,"App process");
+}
 
 void app_init(void){
 
@@ -52,8 +64,9 @@ void app_init(void){
 #endif
 
 	storage_init();
-
+#if TEST_LED 
 	test_led(&led_control);
+#endif
 }
 
 #define MAX_LENGTH_VER 50
@@ -107,6 +120,16 @@ char* device_reset_detected(int event){
 	}
 	return reset_reason;
 }
+
 void device_restart(){
 	esp_restart();
+}
+
+
+void button_callback(void * arg){
+	Button *p_button = (Button*)arg;
+	if(p_button->mode == BT_PRESS){
+		measuring_app_deinit(&measuring_app);
+		config_app_inti(&configApp);
+	}
 }

@@ -16,6 +16,7 @@
 #include "freertos/queue.h"
 #include "driver/uart.h"
 
+
 typedef enum{
 	PARITY_NONE = 0,
 	PARITY_EVEN,

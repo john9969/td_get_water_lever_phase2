@@ -32,11 +32,12 @@ struct MeasuringApp
 {
     ERROR_t error[MAX_NUM_ERROR];
     MEASURING_APP_STATE_t state;
+    TaskHandle_t measuring_task;
 };
 
 void measuring_app_init(void * arg);
 void measuring_app_process(void* arg);
-
+void measuring_app_deinit(void* arg);
 
 extern MeasuringApp measuring_app;
 #endif // MEASURING_APP_H

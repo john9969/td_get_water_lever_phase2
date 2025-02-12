@@ -22,18 +22,18 @@ typedef enum{
 }BUTTON_MODE;
 
 typedef struct Button_t Button;
-
+typedef void (*Button_Callback)(void *);
 struct Button_t{
-	MBS_GPIO *gpio;
-	volatile unsigned int time;
-	volatile unsigned int time_debone;
+	GPIO *gpio;
 	BUTTON_MODE mode;
+	volatile unsigned int time;
+	Button_Callback callback;
 	TaskHandle_t button_task;
 };
 
-void button_init(Button *p_button,MBS_GPIO *gpio);
+void button_init(Button *p_button,GPIO *gpio);
 void button_deinit(Button *p_button);
 BUTTON_MODE button_get_state(Button *p_button);
 
-
+extern void button_callback(void *arg);
 #endif /* MAIN_COMPONENTS_BUTTON_BUTTON_H_ */

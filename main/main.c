@@ -37,10 +37,13 @@ void p_monitor(){
         vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
+
+
 void app_main(void)
 {
 	board_init();
 	app_init();
 	p_monitor();
+
 }
 

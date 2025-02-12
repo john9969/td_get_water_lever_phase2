@@ -16,12 +16,12 @@
 static void button_task(void* arg);
 #define MAX_TIME_DEBONE 1000
 #define MAX_TIME_HOLD 10
-void button_init(Button *p_button,MBS_GPIO *gpio){
-	//p_button->gpio = gpio;
+void button_init(Button *p_button,GPIO *gpio){
+	p_button->gpio = gpio;
 	p_button->time = 0;
-//	p_button->time_debone = 0;
-//	p_button->mode = BT_RELEASE;
+	p_button->mode = BT_RELEASE;
 	p_button->button_task = NULL;
+	p_button->callback = button_callback;
 	xTaskCreate(button_task,"Button task",1024*2,(void*)p_button,3,&p_button->button_task);
 }
 
@@ -45,9 +45,8 @@ static void button_task(void* arg){
 		else{
 			p_button->time = 0;
 		}
-		if(p_button->time >= TIME_GET_INTO_CONFIG_MODE{
-			wifi_clear_info();
-			esp_restart();
+		if(p_button->time >= TIME_GET_INTO_CONFIG_MODE){
+			p_button->callback(p_button);
 		}
 		vTaskDelay(pdMS_TO_TICKS(BUTTON_TIME_DELAY));
 	}
