@@ -3,7 +3,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "esp_log.h"
+#include "freertos/queue.h"
 #include "app_config.h"
 /**
  * @brief The configuration application state.
@@ -22,13 +22,14 @@ typdef enum {
 typedef enum {
     STATE_INIT =0,
     STATE_ON_SENSOR,
-    STATE_ON_DCOM
+    STATE_ON_DCOM,
+    STATE_WAITNG
 } SETUP_STATE;
-
-typedef struct {
-    SETUP_STATE setupState;
-    vTaskHandle_t config_task;
-} ConfigApp;
+typedef struct ConfigApp ConfigApp;
+struct ConfigApp{
+    SETUP_STATE state;
+    TaskHandle_t config_task;
+};
 
 void config_app_init(void * arg);
 void config_app_deinit(void * arg);

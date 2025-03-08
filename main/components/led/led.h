@@ -12,6 +12,7 @@ typedef enum {
     LED_OFF,
     LED_ON,
     LED_BLINK_ERR,
+    LED_BLINK_CONFIG,
     LED_BLINK_1000MS,
     LED_BLINK_3000MS
 } led_state_t;

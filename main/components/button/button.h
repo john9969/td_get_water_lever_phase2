@@ -31,9 +31,10 @@ struct Button_t{
 	TaskHandle_t button_task;
 };
 
-void button_init(Button *p_button,GPIO *gpio);
+void button_init(Button *p_button);
 void button_deinit(Button *p_button);
 BUTTON_MODE button_get_state(Button *p_button);
+extern Button wake_button_process;
 
-extern void button_callback(void *arg);
+void button_wake_callback(void *arg);
 #endif /* MAIN_COMPONENTS_BUTTON_BUTTON_H_ */

@@ -11,8 +11,8 @@
 static const char *TAG = "UART";
 #define BUF_SIZE (1024)
 #define RD_BUF_SIZE (BUF_SIZE)
-#define PATTERN_CHR_NUM    (3)
-
+#define PATTERN_CHR_NUM    (1)
+#define PATTERN_CHR_CHARECTOR    (0xAA)
 static void uart_event_task(void *pvParameters);
 
 void HAL_UART_Init(UART_Typedef *huart){
@@ -27,7 +27,7 @@ void HAL_UART_Init(UART_Typedef *huart){
     uart_driver_install(huart->port, BUF_SIZE * 2, BUF_SIZE * 2,100,&huart->queue, 0);
     uart_param_config(huart->port, &uart_config);
     uart_set_pin(huart->port, huart->pin_tx, huart->pin_rx, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    uart_enable_pattern_det_baud_intr(huart->port, '+', PATTERN_CHR_NUM, 9, 0, 0);
+    // uart_enable_pattern_det_baud_intr(huart->port, PATTERN_CHR_CHARECTOR, PATTERN_CHR_NUM, 1, 0, 0);
     uart_pattern_queue_reset(huart->port, 20);
     xTaskCreate(uart_event_task, "uart_event_task", 1024*8,(void*)huart, 21, NULL);
 }
@@ -60,8 +60,10 @@ static void uart_event_task(void *pvParameters){
                 be full.*/
                 case UART_DATA:
                     uart_read_bytes(huart->port, dtmp, event.size, portMAX_DELAY);
-                    ESP_LOGI(TAG, "[UART DATA]: %s",dtmp);
-                    //ESP_LOG_BUFFER_HEX(TAG,dtmp,event.size);
+                    // ESP_LOGI(TAG, "[UART DATA]: %s",dtmp);
+                    // ESP_LOGI(TAG, "[UART DATA]:");
+                    ESP_LOG_BUFFER_HEX(TAG,dtmp,event.size);
+                    huart->has_data_come(huart,dtmp,event.size);
                     break;
                 //Event of HW FIFO overflow detected
                 case UART_FIFO_OVF:
@@ -103,12 +105,12 @@ static void uart_event_task(void *pvParameters){
                         // As an example, we directly flush the rx buffer here.
                         uart_flush_input(huart->port);
                     } else {
-                        uart_read_bytes(huart->port, dtmp, pos, 100 / portTICK_PERIOD_MS);
-                        uint8_t pat[PATTERN_CHR_NUM + 1];
-                        memset(pat, 0, sizeof(pat));
-                        uart_read_bytes(huart->port, pat, PATTERN_CHR_NUM, 100 / portTICK_PERIOD_MS);
+                        int length = uart_read_bytes(huart->port, dtmp,sizeof(dtmp), 100 / portTICK_PERIOD_MS);
+                        ESP_LOGI(TAG, "Data Length: %d", length);  
                         ESP_LOGI(TAG, "read data: %s", dtmp);
-                        ESP_LOGI(TAG, "read pat : %s", pat);
+                        ESP_LOG_BUFFER_HEX(TAG,dtmp,length);
+                        //huart1.pattern_detected(huart,dtmp,length);
+                        uart_flush_input(huart->port);
                     }
                     break;
                 //Others
@@ -121,5 +123,7 @@ static void uart_event_task(void *pvParameters){
     vTaskDelete(NULL);
 }
 
-UART_Typedef huart1= {.databit = DATA_8,.parity = PARITY_NONE,.pin_tx =18,.pin_rx =19,.port = 1,.baurate = 115200};
+UART_Typedef huart1= {.databit = DATA_8,.parity = PARITY_NONE,.pin_tx =18,.pin_rx =19,.port = 1,.baurate = 115200, .has_data_come = uart_has_data_come};  
 UART_Typedef huart2 = {.databit = DATA_8,.parity = PARITY_NONE,.pin_tx = 4,.pin_rx =5,.port = 2,.baurate = 115200};
+
+

@@ -12,7 +12,7 @@ enum APP_STATE_t
 {
     APP_STATE_INIT,
     APP_STATE_RUN_SCRIPT_MEASURING,
-    APP_STATE_RUN_SCRIPT_CONFIG,
+    APP_STATE_RUN_CONFIG,
 #if ENABLE_OTA    
     APP_STATE_OTA,
 #endif
@@ -21,14 +21,16 @@ enum APP_STATE_t
 };
 
 typedef struct Main_App Main_App;
-
+struct Main_App{
+    APP_STATE_t state;
+};
 void app_init(void);
 #ifdef ENABLE_OTA
 char* app_get_version();
 #endif // ENABLE_OTA
 
-void app_process(void);
+//void app_process(void* arg);
 char* device_reset_detected(int event);
 void device_restart();
-
-#endif /* MAIN_APP_APP_CONFIG_H_ */
+extern Main_App main_app;
+#endif /* MAIN_APP__H */

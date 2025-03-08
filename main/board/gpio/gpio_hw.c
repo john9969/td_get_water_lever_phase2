@@ -59,5 +59,5 @@ void gpio_pin_toggle(GPIO *gpio){
 }
 
 GPIO led_signal = { .pin = LED_SIGNAL_PIN, .mode = GPIO_OUTPUT, .pull_en = PULL_UP_DOWN_NO };
-GPIO button_gpio = { .pin = BUTTON_GPIO_PIN, .mode = GPIO_INPUT, .pull_en = PULL_UP_EN };
+GPIO button_gpio = { .pin = WAKEUP_PIN, .mode = GPIO_INPUT};
 GPIO wifi_poweron_gpio = { .pin = WIFI_POWERON_PIN, .mode = GPIO_OUTPUT, .pull_en = PULL_UP_EN };

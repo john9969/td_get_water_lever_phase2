@@ -1,1 +1,7 @@
 /build/
+
+# Lib from Git
+
+service/tiny-json/*
+!service/tiny-json/tiny-json.*
+

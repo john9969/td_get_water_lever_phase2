@@ -135,6 +135,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 		ip_event_got_ip_t *event = (ip_event_got_ip_t*) event_data;
 		ESP_LOGI(TAG,"got ip:" IPSTR "\r\n", IP2STR(&event->ip_info.ip));
 		num_connect = 0;
+		xEventGroupSetBits(event_group, CONNECT_BIT);
 		xEventGroupSetBits(event_group,WF_CONNECTED_BIT);
 	}
 }
@@ -232,7 +233,7 @@ void wifi_initialise(void) {
 		ESP_ERROR_CHECK(esp_wifi_start());
 	}
 	ESP_LOGI(TAG, "Waiting for connection");
-	xEventGroupWaitBits(event_group, CONNECT_BIT, false, true, portMAX_DELAY);
+	xEventGroupWaitBits(event_group, CONNECT_BIT, false, false, portMAX_DELAY);
 	s_wifi_enable = false;
 }
 
@@ -255,7 +256,7 @@ static void event_handler_smartconfig(void *arg, esp_event_base_t event_base,
 		xQueueSend(wifi_queue_sta_handle,&wifi_sta_mod,(TickType_t)portMAX_DELAY);
 		ip_event_got_ip_t *event = (ip_event_got_ip_t*) event_data;
 		ESP_LOGI(TAG,"got ip:" IPSTR "\r\n", IP2STR(&event->ip_info.ip));
-
+		xEventGroupSetBits(event_group, CONNECT_BIT);
 		if(s_wifi_enable == true){
 			xEventGroupSetBits(event_group, WF_CONNECTED_BIT);
 		}
@@ -326,7 +327,7 @@ static void smartconfig_example_task(void *parm) {
 
 	while (1) {
 		uxBits = xEventGroupWaitBits(event_group,
-				WF_CONNECTED_BIT, true,true, portMAX_DELAY);
+				WF_CONNECTED_BIT, false,false, portMAX_DELAY);
 		if (uxBits & WF_CONNECTED_BIT) {
 			ESP_LOGI(TAG,"WiFi Connected to ap\r\n");
 			wifi_event = WIFI_EVENT_STA_CONNECTED;

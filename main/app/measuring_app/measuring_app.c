@@ -2,18 +2,21 @@
 #include "app_config.h"
 #include "esp_log.h"
 #include "esp_system.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
+#include "tiny-json.h"
 #include "led.h"
+#include "rtc.h"
+#include "http.h"
 static const char* TAG = "MEASURING_APP";
 
 static bool measuring_app_set_state(void * arg, MEASURING_APP_STATE_t state);
+static bool post_data_measuring(void* arg, void* data);
+static bool sync_time(void* arg, void* data, int* size);
+
 void measuring_app_init(void * arg){
     MeasuringApp * app = (MeasuringApp *)arg;
     app->state = MEASURING_APP_STATE_INIT;
     ESP_LOGI(TAG,"Measuring app init");
-    vtaskCreate(measuring_app_process,"Measuring app process",1024*2,(void*)app,3,&app->measuring_task);
+    xTaskCreate(measuring_app_process,"Measuring app process",1024*2,(void*)app,3,&app->measuring_task);
 }
 
 void measuring_app_deinit(void* arg){
@@ -36,6 +39,7 @@ void measuring_app_process(void* arg){
             break;
         case MEASURING_APP_STATE_MEASURING:
             ESP_LOGI("MEASURING_APP","Measuring app measuring");
+            vTaskDelay(pdMS_TO_TICKS(100000));
             app->state = MEASURING_APP_STATE_POSTING;
             break;
         case MEASURING_APP_STATE_POSTING:
@@ -79,6 +83,56 @@ bool measuring_app_set_state(void * arg, MEASURING_APP_STATE_t state) {
         break;
     }
 }
+void uart_pattern_detected(void *arg, uint8_t *data, uint32_t len){
+    ESP_LOGI(TAG,"Pattern detected");
+    ESP_LOGI(TAG,"Length: %d",(int)len);
+    for (int i = 0; i < len; i++)
+    {
+        ESP_LOGI(TAG,"Data: %c",data[i]);
+    }
+
+}
+static bool post_data_measuring(void* arg, void* data){
+    ESP_LOGI(TAG,"Post data");
+    char response[HTTP_BUFF_SIZE] = {0};
+    char *result = NULL;
+    int size = 0;
+    http_lock();
+    result = http_request_post(API_POST_WATER,data,&size);
+    if(result == NULL || size == 0){
+        ESP_LOGI(TAG,"Post data failed");
+        http_unlock();
+        return false;
+    }
+    memcpy(response, result, size);
+    
+    http_unlock();
+    ESP_LOGI(TAG,"Post data success");
+    ESP_LOGI(TAG,"Response: %s",response);
+    return true;
+
+}
+static bool sync_time(void* arg, void* data, int* size){
+    ESP_LOGI(TAG,"Sync time");
+    char response[HTTP_BUFF_SIZE] = {0};
+    char *result = NULL;
+    *size = 0;
+    http_lock();
+    result = http_request_get(API_UPDATE_TIME,size);
+    if(result == NULL || *size == 0){
+        ESP_LOGI(TAG,"Sync time failed");
+        http_unlock();
+        return false;
+    }
+    memcpy(response, result, *size);
+    http_unlock();
+    ESP_LOGI(TAG,"Sync time success");
+    ESP_LOGI(TAG,"Response: %s",response);
+    RTC_set_time_from_string(response);
+    return true;
+}
+
+
 
 MeasuringApp measuring_app = {
     .error = {

@@ -1,5 +1,8 @@
 #ifndef MEASURING_APP_H
 #define MEASURING_APP_H
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
 #include "app_config.h"
 typedef enum MEASURING_APP_STATE_t MEASURING_APP_STATE_t;
 typedef enum ERROR_CODE_t ERROR_CODE_t;

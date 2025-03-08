@@ -11,7 +11,7 @@
 #include "esp_netif.h"
 #include "esp_err.h"
 #include "esp_event.h"
-
+#include "adc_hw.h"
 char auther_str[50] = {NULL};
 
 
@@ -32,6 +32,9 @@ void board_init(void){
 	gpio_init(&led_signal);
 	gpio_init(&button_gpio);
 	gpio_init(&wifi_poweron_gpio);
+	adc_init();
+	ESP_LOGI("ADC","Adc value:%d",adc_read_value());
+	ESP_LOGI("ADC","Adc voltage:%d",adc_read_vol());
 }
 
 void board_deinit(void){

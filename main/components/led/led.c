@@ -5,16 +5,23 @@
 #include "gpio_hw.h"
 #include "base.h"
 static const char TAG[] = "LED_CONTROL";
+#if TEST_LED
 static const char TAG_TEST[] = "LED_TEST";
+#endif // DEBUG
+
 static int old_error_times = 0;
 void led_control_task(void *arg) {
     led_control_t * p_led = (led_control_t*) arg;
     while (1) {
-        if (p_led->times > 0 && p_led->state != LED_BLINK_ERR)    
+        if (p_led->state != LED_BLINK_ERR       && 
+            p_led->state != LED_BLINK_CONFIG    && 
+            p_led->times > 0)    
         {
             p_led->times--;
         }
-        else if (p_led->times == 0 && p_led->state != LED_BLINK_ERR) 
+        else if (p_led->state != LED_BLINK_ERR  && 
+                p_led->state != LED_BLINK_CONFIG && 
+                p_led->times == 0) 
         {
             vTaskDelay(pdMS_TO_TICKS(1000));   
             continue;
@@ -36,6 +43,12 @@ void led_control_task(void *arg) {
                 gpio_pin_write(&led_signal, GPIO_PIN_RESET);      //LED ON
                 ESP_LOGI(TAG, "LED ON");
                 vTaskDelay(pdMS_TO_TICKS(1000));
+                break;
+            case LED_BLINK_CONFIG:
+                gpio_pin_write(&led_signal, GPIO_PIN_RESET);      //LED ON
+                vTaskDelay(pdMS_TO_TICKS(200));
+                gpio_pin_write(&led_signal, GPIO_PIN_SET);      //LED OFF
+                vTaskDelay(pdMS_TO_TICKS(200));
                 break;
             case LED_BLINK_ERR:
                 ESP_LOGI(TAG, "LED BLINK Error: %s", (char*)&error_list.errors[error_list.count-1]); //print lastest error code
@@ -97,6 +110,7 @@ void signal_new_error(void * arg) {
 
 void led_init(void * arx) {
     led_control_t * p_led = (led_control_t*) arx;    
+    set_led_state(p_led,LED_BLINK_1000MS,3);
     xTaskCreate(led_control_task, "LED Control Task", 1024, p_led, 1, &(p_led->led_task));
 }
 #if TEST_LED

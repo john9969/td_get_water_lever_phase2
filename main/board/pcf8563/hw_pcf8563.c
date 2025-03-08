@@ -1,6 +1,5 @@
 #include <string.h>
 #include <time.h>
-
 #include "hw_pcf8563.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -31,34 +30,28 @@ esp_err_t pcf8563_init_desc(i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio
 	dev->sda_io_num = sda_gpio;
 	dev->scl_io_num = scl_gpio;
 	dev->clk_speed = I2C_FREQ_HZ;
-	return i2c_dev_init(port, sda_gpio, scl_gpio);
-}
-
-esp_err_t pcf8563_reset(i2c_dev_t *dev)
-{
-	CHECK_ARG(dev);
-
-	uint8_t data[2];
-	data[0] = 0;
-	data[1] = 0;
-	
-	return i2c_dev_write_reg(dev, PCF8563_ADDR_STATUS1, data, 2);
-}
-esp_err_t pcf8563_set_hourly_alarm(i2c_dev_t *dev)
-{
-	CHECK_ARG(dev);
-	if(has_error(&error_list, ERROR_CANNOT_READ_RTC)){
+	if(i2c_dev_init(port, sda_gpio, scl_gpio) != ESP_OK){
 		return ESP_FAIL;
 	}
-	struct tm time = {
-		.tm_min = 10,  // Set alarm to trigger at minute 10
-		.tm_hour = PCF8563_ALARM_DONT_CARE,  // Don't care about the hour
-		.tm_mday = PCF8563_ALARM_DONT_CARE,  // Don't care about the day of the month
-		.tm_wday = PCF8563_ALARM_DONT_CARE   // Don't care about the day of the week
-	};
 
-	return pcf8563_set_alarm(dev, &time);
+	if(pcf8563_reset_alarm(dev) != ESP_OK){
+		return ESP_FAIL;
+	}
+	return ESP_OK;
 }
+/**
+ * Note: 
+ * Enable alarm: set bit TI/TP and AIE 
+ * Clear alarm: reset bit AF
+*/
+esp_err_t pcf8563_reset_alarm(i2c_dev_t *dev)
+{
+	CHECK_ARG(dev);
+	uint8_t data[1];
+	data[0] = 0b00010010; //0x00000010; //bit 2 enable alarm
+	return i2c_dev_write_reg(dev, PCF8563_ADDR_STATUS2, data, 1);
+}
+
 esp_err_t pcf8563_set_alarm(i2c_dev_t *dev, struct tm *time)
 {
 	CHECK_ARG(dev);
@@ -67,15 +60,14 @@ esp_err_t pcf8563_set_alarm(i2c_dev_t *dev, struct tm *time)
 		return ESP_FAIL;
 	}
 	uint8_t data[4];
-
-	/* alarm time data */
 	data[0] = dec2bcd(time->tm_min);
 	data[1] = dec2bcd(time->tm_hour);
 	data[2] = dec2bcd(time->tm_mday);
 	data[3] = dec2bcd(time->tm_wday);  // tm_wday is 0 to 6
-
+	
 	return i2c_dev_write_reg(dev, PCF8563_ADDR_ALARM, data, 4);
 }
+
 
 esp_err_t pcf8563_set_time(i2c_dev_t *dev, struct tm *time)
 {
@@ -122,7 +114,6 @@ esp_err_t pcf8563_get_time(i2c_dev_t *dev, struct tm *time)
 	time->tm_mon  = bcd2dec(data[5] & 0x1F) - 1;	// tm_mon is 0 to 11
 	time->tm_year = bcd2dec(data[6]) + 2000;
 	time->tm_isdst = 0;
-
 	return ESP_OK;
 }
 

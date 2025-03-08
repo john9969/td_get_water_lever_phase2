@@ -10,11 +10,9 @@
 
 
 
-#define MAX_BATTERY_CABINET_NUM										MAX_CABINET
-#define STATION_CHARGER_NUM											(2)
 #define SERIAL_NUMBER "TD-016"
 
-#define API_UPDATE_TIME "https://"
+#define API_UPDATE_TIME "https://donuoctrieuduong.xyz/dev_test/get_time.php"
 #define API_POST_WATER "https://"
 #if ENABLE_OTA
     #define API_OTA "https://"
@@ -39,12 +37,13 @@
 #endif
 
 #define WF_CONNECTED_BIT BIT0
-
-#define USING_WIFI 0
+#define UART_RESPONSE_BIT BIT1
+#define USING_WIFI 1
 #define USING_DEFAULT_WIFI_INFO 1
 #define USING_CONFIG_MODE 0
-
+#define HTTP_BUFF_SIZE (512)
 #define MINIMUM_VOL_INPUT											(9.0)
 #define CONNECT_BIT BIT1
+#define BUTTON_STATE_BIT BIT2
 #define MAX_NUM_ERROR                                                (10)   // Maximum number of errors that can be stored  
 #endif /* MAIN_APP_APP_CONFIG_H_ */
