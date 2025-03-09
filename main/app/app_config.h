@@ -10,10 +10,10 @@
 
 
 
-#define SERIAL_NUMBER "TD-016"
+#define SERIAL_NUMBER "TD_MW_0006(Test)"
 
-#define API_UPDATE_TIME "https://donuoctrieuduong.xyz/dev_test/get_time.php"
-#define API_POST_WATER "https://"
+#define API_UPDATE_TIME "http://donuoctrieuduong.xyz/dev_test/get_time.php"
+#define API_POST_WATER "http://donuoctrieuduong.xyz/dev_test/water_lever.php"
 #if ENABLE_OTA
     #define API_OTA "https://"
 #endif

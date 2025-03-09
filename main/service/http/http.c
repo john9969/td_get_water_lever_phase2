@@ -95,14 +95,24 @@ void http_post_test() {
 char * http_request_send(const char * url, const char *post_data, int* size)
 {
     ESP_LOGI(TAG, "HTTP Request URL: %s", url);
+    memset(response_buffer, 0, HTTP_BUFF_SIZE);
+    (*size) = 0; 
     esp_http_client_config_t config = {
         .url = url,
         .event_handler = _http_event_handler,
         .user_data = response_buffer,        // Pass address of local buffer to get response
-        .buffer_size = 1024,
-        .crt_bundle_attach = esp_crt_bundle_attach
+        .buffer_size = HTTP_BUFF_SIZE,
+        // .crt_bundle_attach = esp_crt_bundle_attach
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
+    if (post_data != NULL) {
+        esp_http_client_set_method(client, HTTP_METHOD_POST);
+        esp_http_client_set_header(client, "Content-Type", "application/json");
+        esp_http_client_set_post_field(client, post_data, strlen(post_data));
+    }
+    else {
+        esp_http_client_set_method(client, HTTP_METHOD_GET);
+    }
     esp_err_t err = esp_http_client_perform(client);
     if (err == ESP_OK) {
         int status = esp_http_client_get_status_code(client);

@@ -7,15 +7,16 @@ static const char* TAG = "RTC";
 RTC_Alarm rtc_alarm;
 RTC_DateTime rtc_time;
 
-#ifdef ENABLE_TEST_ALARM
+#if ENABLE_TEST_ALARM
 static void RTC_task(void * arx);
 #endif
 
 void RTC_init(void* arx){   
     RTC_DateTime * p_rtc = (RTC_DateTime*) arx;
     p_rtc->rtc_task = NULL;
+    pcf8563_reset_alarm(&pcf8563_dev); //clear alarm and set RTC to normal mode.
     RTC_set_alarm(PCF8563_ALARM_DONT_CARE,10);
-#ifdef ENABLE_TEST_ALARM
+#if ENABLE_TEST_ALARM
     GPIO btn_pin = {.pin = BUTTON_GPIO_PIN, .mode = GPIO_INPUT,.pull_en = PULL_UP_EN};
     GPIO wake_up_pin = {.pin = WAKEUP_PIN, .mode = GPIO_INPUT,.pull_en = PULL_UP_EN};
     gpio_init(&btn_pin);
@@ -28,7 +29,7 @@ void RTC_deinit(void* arx){
     vTaskDelete(p_rtc->rtc_task);
 }
 
-#ifdef ENABLE_TEST_ALARM
+#if ENABLE_TEST_ALARM
 static uint8_t time_test = 0;
 static int time_increase = 0;
 void RTC_task(void* arx)
@@ -90,7 +91,7 @@ RTC_DateTime RTC_get_time(void* arx){
 static const int RTC_ELEMENTS_NUM = 6;
 void RTC_set_time_from_string(const char* timeStr){
     struct tm time;
-    int count = sscanf(timeStr,"%d:%d;%d_%d:%d:%d", &time.tm_hour, &time.tm_min, &time.tm_sec, &time.tm_mday, &time.tm_mon, &time.tm_year);
+    int count = sscanf(timeStr,"%d:%d:%d_%d:%d:%d", &time.tm_hour, &time.tm_min, &time.tm_sec, &time.tm_mday, &time.tm_mon, &time.tm_year);
     if (count != RTC_ELEMENTS_NUM)
     {
         ESP_LOGE(TAG,"Error parsing time string");
@@ -108,7 +109,9 @@ void RTC_set_alarm(uint8_t alarm_hour,uint8_t alarm_minute){
     time.tm_min =   alarm_minute;
     time.tm_mday = PCF8563_ALARM_DONT_CARE;
     time.tm_wday = PCF8563_ALARM_DONT_CARE;
+#if ENABLE_TEST_ALARM
     pcf8563_reset_alarm(&pcf8563_dev);
+#endif
     if(ESP_OK == pcf8563_set_alarm(&pcf8563_dev, &time)){
         ESP_LOGI(TAG,"Set alarm success");
     }

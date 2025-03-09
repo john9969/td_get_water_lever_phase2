@@ -4,6 +4,7 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 #include "app_config.h"
+#define TIMES_GET_WATER_LEVEL 3 // Number of times to get water level
 typedef enum MEASURING_APP_STATE_t MEASURING_APP_STATE_t;
 typedef enum ERROR_CODE_t ERROR_CODE_t;
 typedef struct MeasuringApp MeasuringApp;
@@ -35,6 +36,8 @@ struct MeasuringApp
 {
     ERROR_t error[MAX_NUM_ERROR];
     MEASURING_APP_STATE_t state;
+    int water_level[TIMES_GET_WATER_LEVEL];
+    char* time_stamp_get_water_level;
     TaskHandle_t measuring_task;
 };
 

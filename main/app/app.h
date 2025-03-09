@@ -7,6 +7,9 @@
 
 #ifndef APP_APP_H_
 #define APP_APP_H_
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+
 typedef enum APP_STATE_t APP_STATE_t;
 enum APP_STATE_t
 {
@@ -33,4 +36,6 @@ char* app_get_version();
 char* device_reset_detected(int event);
 void device_restart();
 extern Main_App main_app;
+extern EventGroupHandle_t event_group;
+
 #endif /* MAIN_APP__H */

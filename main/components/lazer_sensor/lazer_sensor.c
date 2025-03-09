@@ -19,6 +19,7 @@ void lazer_sensor_init(void * arg){
   sensor->huart->pin_tx = SENSOR_TX_PIN;
   sensor->huart->baurate = LAZER_BAUDRATE;
   HAL_UART_Init(sensor->huart);
+  vTaskDelay(pdMS_TO_TICKS(5000));
 #if ENABLE_TEST_SENSOR
   test_sensor(sensor);
 #endif
@@ -87,14 +88,14 @@ uint32_t pri_lazer_sensor_process_get_distance(void* arg)
     timeout += TIME_DELAY_READ_SENSOR;
     vTaskDelay(pdMS_TO_TICKS(TIME_DELAY_READ_SENSOR));
   }
-  if(!has_done_response) return false;
+  if(!has_done_response) return 0;
   for(int i = 6; i < 10; i++){
     // ESP_LOGI("LAZER_SENSOR","Distance: %lu mm",_distance);
     if(_data_come_array[i]!= '\0')
       _distance = (_distance<<8|_data_come_array[i]);
   }
   if(_distance > MAX_DISTANCE){
-    return false;
+    return MAX_DISTANCE;
   }
   return _distance;
 }

@@ -6,7 +6,7 @@ static bool is_state_changed(STATE old_state, STATE new_state);
 Dcom dcom = {.dcom_gpio = &wifi_poweron_gpio, .state = STATE_ON};
 void dcom_init(Dcom *p_dcom){	
 	p_dcom->dcom_task = NULL;
-	xTaskCreate(dcom_task,"Dcom task",1024*2,(void*)p_dcom,3,&p_dcom->dcom_task);
+	xTaskCreate(dcom_task,"Dcom task",1024,(void*)p_dcom,3,&p_dcom->dcom_task);
 }
 
 void dcom_deinit(Dcom *p_dcom){

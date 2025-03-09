@@ -232,8 +232,6 @@ void wifi_initialise(void) {
 		xQueueSend(wifi_queue_sta_handle, &wifi_sta_mod, (TickType_t)portMAX_DELAY);
 		ESP_ERROR_CHECK(esp_wifi_start());
 	}
-	ESP_LOGI(TAG, "Waiting for connection");
-	xEventGroupWaitBits(event_group, CONNECT_BIT, false, false, portMAX_DELAY);
 	s_wifi_enable = false;
 }
 
