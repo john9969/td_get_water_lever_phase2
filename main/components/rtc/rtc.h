@@ -7,7 +7,7 @@
 #include "freertos/queue.h" 
 #include "hw_pcf8563.h"    // RTC library
 
-#define ENABLE_TEST_ALARM 0
+#define ENABLE_TEST_ALARM 1
 
 // Structure to hold time and date information
 typedef struct {
@@ -38,6 +38,5 @@ RTC_DateTime RTC_get_time(void* arx);
 void RTC_set_alarm(uint8_t alarm_hour,uint8_t alarm_minute);
 extern RTC_Alarm rtc_alarm;
 extern RTC_DateTime rtc_time;
-
 
 #endif // RTC_H

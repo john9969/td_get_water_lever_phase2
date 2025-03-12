@@ -116,7 +116,10 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 		}
 		if(num_retry == MAX_NUM_RETRY){
 			ESP_LOGI(TAG,"Wifi connect fail, reset wifi...\r\n");
+			esp_wifi_disconnect();
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 			esp_wifi_stop();
+			vTaskDelay(100 / portTICK_PERIOD_MS);
 			esp_restart();
 			vTaskDelay(1000 / portTICK_PERIOD_MS);
 		}
@@ -127,7 +130,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 		esp_wifi_connect();
 	}
 	else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-		vTaskDelay(100);
+		vTaskDelay(100 / portTICK_PERIOD_MS); // delay 5s from led off
 		//dns_gethostbyname("https://www.google.com.vn",NULL, found_callback, NULL);
 		wifi_event = WIFI_EVENT_STA_CONNECTED;
 		wifi_sta_mod = WF_CONNECTED_AP;
@@ -400,5 +403,7 @@ void wifi_app_init(void){
 	wifi_initialise();
 }
 void wifi_app_deinit(void){
-
+	esp_wifi_disconnect();
+	esp_wifi_stop();
+	esp_wifi_deinit();
 }

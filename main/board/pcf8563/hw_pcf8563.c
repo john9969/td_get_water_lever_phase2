@@ -33,7 +33,7 @@ esp_err_t pcf8563_init_desc(i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio
 	if(i2c_dev_init(port, sda_gpio, scl_gpio) != ESP_OK){
 		return ESP_FAIL;
 	}
-
+	vTaskDelay(100 / portTICK_PERIOD_MS);
 	if(pcf8563_reset_alarm(dev) != ESP_OK){
 		return ESP_FAIL;
 	}
@@ -67,7 +67,6 @@ esp_err_t pcf8563_set_alarm(i2c_dev_t *dev, struct tm *time)
 	
 	return i2c_dev_write_reg(dev, PCF8563_ADDR_ALARM, data, 4);
 }
-
 
 esp_err_t pcf8563_set_time(i2c_dev_t *dev, struct tm *time)
 {

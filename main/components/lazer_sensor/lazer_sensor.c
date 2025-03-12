@@ -31,7 +31,7 @@ LazerSensor lazer_sensor = {
 void lazer_sensor_deinit(void * arg){
     (void)arg;    
 }
-static bool has_done_response;
+static bool has_done_response = false;
 bool lazer_sensor_on(void * arg){
   LazerSensor * sensor = (LazerSensor*)arg;
   for(int i=0; i < COMMAND_SENSOR_NUM; i++){
@@ -88,11 +88,13 @@ uint32_t pri_lazer_sensor_process_get_distance(void* arg)
     timeout += TIME_DELAY_READ_SENSOR;
     vTaskDelay(pdMS_TO_TICKS(TIME_DELAY_READ_SENSOR));
   }
-  if(!has_done_response) return 0;
+  if(!has_done_response) {
+    return 0;
+  }
   for(int i = 6; i < 10; i++){
-    // ESP_LOGI("LAZER_SENSOR","Distance: %lu mm",_distance);
+    ESP_LOGI("LAZER_SENSOR","Distance: %lu mm",_distance);
     if(_data_come_array[i]!= '\0')
-      _distance = (_distance<<8|_data_come_array[i]);
+    _distance = (_distance<<8|_data_come_array[i]);
   }
   if(_distance > MAX_DISTANCE){
     return MAX_DISTANCE;
@@ -114,6 +116,8 @@ void uart_has_data_come(void * arg, uint8_t *data, uint32_t len){
     }
     else {
         ESP_LOGI("UART","Data come FAIL");
+        memset(_data_come_array,0,sizeof(_data_come_array));
+        memset(data,0,len);
     }
 }
 

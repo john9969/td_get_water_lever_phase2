@@ -8,6 +8,7 @@
 #include "config_app.h"
 #include "app_config.h"
 #include "esp_sleep.h"
+#include "wifi_app.h"
 static const char *TAG = "CONFIG_APP";
 static void config_app_process(void* arg);
 
@@ -15,7 +16,7 @@ void config_app_init(void * arg){
     ConfigApp * p_app_config = (ConfigApp *)arg;
     p_app_config->state = STATE_INIT;
     ESP_LOGI("CONFIG_APP","Config app init");
-    xTaskCreate(config_app_process,"Config app process",1024*8,(void*)p_app_config,3,&p_app_config->config_task);
+    xTaskCreate(config_app_process,"Config app process",1024*4,(void*)p_app_config,3,&p_app_config->config_task);
 }
 
 void config_app_deinit(void * arg){
@@ -51,6 +52,7 @@ void config_app_process(void *arg){
                 timeout_config_mode_count -= TIME_CONFIG_MODE_COUNT;
                 ESP_LOGI(TAG,"in config mode, Couunt down: %d to sleep",timeout_config_mode_count);
                 if(timeout_config_mode_count <= 0){
+                    wifi_app_deinit();
                     esp_deep_sleep_start();
                 }
                 vTaskDelay  (5000 / portTICK_PERIOD_MS);

@@ -18,7 +18,7 @@ char auther_str[50] = {NULL};
 void board_init(void){
 	esp_err_t err =  pcf8563_init_desc(&pcf8563_dev, I2C_NUM_0, SDA_GPIO_NUM, SCL_GPIO_NUM);
 	if (err != ESP_OK) {
-		// log_e("Could not initialize PCF8563 device descriptor");
+		ESP_LOGE("BOARD","Could not initialize PCF8563 device descriptor");
 	}
 	flash_init();
 	drv_timer_init();

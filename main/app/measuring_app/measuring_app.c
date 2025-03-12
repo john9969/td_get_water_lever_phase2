@@ -11,6 +11,7 @@
 #include "lazer_sensor.h"
 #include "dcom.h"
 #include "app.h"
+#include "wifi_app.h"
 static const char* TAG = "MEASURING_APP";
 
 static bool measuring_app_set_state(void * arg, MEASURING_APP_STATE_t state);
@@ -34,6 +35,9 @@ void measuring_app_process(void* arg){
     MeasuringApp * app = (MeasuringApp *)arg;
     while (1)
     {
+        // char * time_str = RTC_get_time_string(&rtc_time);
+        // ESP_LOGI(TAG,"Time: %s",time_str);
+        // free(time_str);
         switch (app->state)
         {
         case MEASURING_APP_STATE_INIT:
@@ -45,6 +49,13 @@ void measuring_app_process(void* arg){
         case MEASURING_APP_STATE_MEASURING:
             ESP_LOGI("MEASURING_APP","Measuring app measuring");
             app->time_stamp_get_water_level = RTC_get_time_string(&rtc_time);
+            int timeout = 10;
+            while(!lazer_sensor_on(&lazer_sensor) && (timeout-- > 0)){
+                ESP_LOGI(TAG,"Lazer sensor on Fail");
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+            ESP_LOGI(TAG,"Lazer sensor on OK");
+            vTaskDelay(pdMS_TO_TICKS(100));
             for(int i =0 ; i < TIMES_GET_WATER_LEVEL; i++){
                 uint32_t distance = lazer_sensor_get_distance(&lazer_sensor);
                 app->water_level[i] = (int)distance;
@@ -73,7 +84,11 @@ void measuring_app_process(void* arg){
         case MEASURING_APP_STATE_DONE:
             ESP_LOGI(TAG,"Measuring app done");
             DCOM_OFF
+
+            wifi_app_deinit();
             esp_deep_sleep_start();
+            free(app->time_stamp_get_water_level);
+            app->time_stamp_get_water_level = NULL;
             break;
 
         case MEASURING_APP_STATE_ERROR:
@@ -197,5 +212,8 @@ MeasuringApp measuring_app = {
             .error_code = ERROR_CODE_NONE
         }
     },
+    .time_stamp_get_water_level = NULL,
+    .measuring_task = NULL,
+    .water_level = {0,0,0},
     .state = MEASURING_APP_STATE_INIT
 };

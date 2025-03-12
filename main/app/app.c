@@ -190,6 +190,7 @@ void app_state_change(void *arg,APP_STATE_t state){
 	ESP_LOGI(TAG,"App_state:%d, new state:%d",app->state,state);
 	if(app->state == state) return;
 	if(app->state == APP_STATE_RUN_CONFIG && state == APP_STATE_INIT){
+		wifi_app_deinit();
 		device_restart();
 	}
 	if(app->state != APP_STATE_RUN_CONFIG && state == APP_STATE_RUN_CONFIG){
