@@ -11,7 +11,7 @@ static uint32_t pri_lazer_sensor_process_get_distance(void* arg);
 static void test_sensor(void * arg);
 #endif
 static uint32_t _distance;
-static uint8_t _data_come_array[20];
+static uint8_t _data_come_array[200];
 void lazer_sensor_init(void * arg){
   LazerSensor * sensor = (LazerSensor*)arg;
   sensor->huart = &huart1;
@@ -104,10 +104,10 @@ uint32_t pri_lazer_sensor_process_get_distance(void* arg)
 
 void uart_has_data_come(void * arg, uint8_t *data, uint32_t len){
     LazerSensor * sensor = (LazerSensor*)arg;
-    ESP_LOGI("UART","Data come");
-    for(int i = 0; i < len; i++){
-        ESP_LOGI("UART","Data: 0x%x",data[i]);
-    }
+    // ESP_LOGI("UART","Data come");
+    // for(int i = 0; i < len; i++){
+    //     ESP_LOGI("UART","Data: 0x%x",data[i]);
+    // }
     if(data[0] == 0xAA){
       memset(_data_come_array,0,sizeof(_data_come_array));
       memcpy(_data_come_array,data,len);

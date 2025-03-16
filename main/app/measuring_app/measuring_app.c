@@ -43,8 +43,9 @@ void measuring_app_process(void* arg){
         case MEASURING_APP_STATE_INIT:
             DCOM_ON                                               
             lazer_sensor_init(&lazer_sensor); 
+            set_led_state(&led_control,LED_ON,-1);
             ESP_LOGI(TAG,"Measuring app init");
-            app->state = MEASURING_APP_STATE_MEASURING;
+            measuring_app_set_state(app, MEASURING_APP_STATE_MEASURING);
             break;
         case MEASURING_APP_STATE_MEASURING:
             ESP_LOGI("MEASURING_APP","Measuring app measuring");
@@ -62,38 +63,38 @@ void measuring_app_process(void* arg){
                 ESP_LOGI(TAG,"Water level %d: %d",i,app->water_level[i]);
                 vTaskDelay(pdMS_TO_TICKS(1000));
             }
-            app->state = MEASURING_APP_STATE_POSTING;
+            measuring_app_set_state(app, MEASURING_APP_STATE_POSTING);
             break;
         case MEASURING_APP_STATE_POSTING:
             ESP_LOGI(TAG,"Measuring app posting");
             xEventGroupWaitBits(event_group,WF_CONNECTED_BIT,pdFALSE,pdFALSE,portMAX_DELAY);
             if(!post_data_measuring(app)){
-                app->state = MEASURING_APP_STATE_ERROR;
+                measuring_app_set_state(app, MEASURING_APP_STATE_ERROR);
                 break;
             }
-            app->state = MEASURING_APP_STATE_SET_TIME;
+            measuring_app_set_state(app, MEASURING_APP_STATE_SET_TIME);
             break;
         case MEASURING_APP_STATE_SET_TIME:
             ESP_LOGI(TAG,"Measuring app set time");
             if(!sync_time()){
-                app->state = MEASURING_APP_STATE_ERROR;
+                measuring_app_set_state(app, MEASURING_APP_STATE_ERROR);
                 break;
             }
-            app->state = MEASURING_APP_STATE_DONE;
+            
+            measuring_app_set_state(app, MEASURING_APP_STATE_DONE);
             break;
         case MEASURING_APP_STATE_DONE:
+        {
             ESP_LOGI(TAG,"Measuring app done");
             DCOM_OFF
-
             wifi_app_deinit();
-            esp_deep_sleep_start();
             free(app->time_stamp_get_water_level);
             app->time_stamp_get_water_level = NULL;
+            esp_deep_sleep_start();
             break;
-
+        }
         case MEASURING_APP_STATE_ERROR:
             ESP_LOGI(TAG,"Measuring app error");
-
             break;
         default:
             break;
@@ -110,7 +111,7 @@ bool measuring_app_set_state(void * arg, MEASURING_APP_STATE_t state) {
         set_led_state(&led_control,LED_ON,-1);
         break;
     case MEASURING_APP_STATE_MEASURING:
-        set_led_state(&led_control,LED_BLINK_3000MS,5);
+        set_led_state(&led_control,LED_BLINK_3000MS,-1);
         break;
     case MEASURING_APP_STATE_ERROR:
     case MEASURING_APP_STATE_DONE:
@@ -120,6 +121,8 @@ bool measuring_app_set_state(void * arg, MEASURING_APP_STATE_t state) {
     default:
         break;
     }
+    app->state = state;
+    return true;
 }
 void uart_pattern_detected(void *arg, uint8_t *data, uint32_t len){
     ESP_LOGI(TAG,"Pattern detected");
@@ -199,9 +202,39 @@ static bool sync_time(){
     }
     memcpy(response, result, size);
     http_unlock();
+    //time struct: 10:34:20_16:03:2025
+    struct tm _time_remote;
+    sscanf(response,"%d:%d:%d_%d:%d:%d",&_time_remote.tm_hour,&_time_remote.tm_min,&_time_remote.tm_sec,&_time_remote.tm_mday,&_time_remote.tm_mon,&_time_remote.tm_year);
+    if(rtc_time.minute == RTC_get_minute(&rtc_time)){
+        ESP_LOGI(TAG, "No need update time");
+        return true;
+    } 
+    int timeout =0;
     ESP_LOGI(TAG,"Sync time success");
     ESP_LOGI(TAG,"Response: %s",response);
     RTC_set_time_from_string(response);
+    timeout =0;
+    printf("RTC: Waiting for wake up pin set to HIGH");
+    while (timeout++ < 10){ //timeout 10s
+        printf(".");
+        if(gpio_read(&button_gpio) == GPIO_PIN_RESET){
+            if((RTC_reset_alarm(NULL) != ESP_OK)){
+                ESP_LOGI(TAG,"Reset alarm Error");
+            }
+            else {
+                ESP_LOGI(TAG, "Reset alarm done");
+                timeout =0;
+                while ((gpio_read(&button_gpio) == GPIO_PIN_RESET) && (timeout++ <10))
+                {
+                    ESP_LOGI(TAG, "Waiting for INT to HIGH");
+                    vTaskDelay(pdMS_TO_TICKS(1000));
+                }
+                break;
+            }
+        } 
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+    
     return true;
 }
 

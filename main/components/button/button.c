@@ -9,7 +9,7 @@
 #include "button.h"
 #include "esp_log.h"
 #include "my_wifi.h"
-//static const char *TAG = "BUTTON";
+static const char *TAG = "BUTTON";
 
 #define BUTTON_TIME_DELAY 10
 #define TIME_GET_INTO_CONFIG_MODE 3000
@@ -34,7 +34,12 @@ static void button_task(void* arg){
 	GPIO_PIN_LEVEL pin_level = GPIO_PIN_SET;
 	for(;;){
 		pin_level = gpio_get_level(WAKEUP_PIN);
-
+		// if(pin_level == GPIO_PIN_SET) {
+		// 	ESP_LOGI(TAG, "BUTTON State: HIGH" );
+		// }
+		// else {
+		// 	ESP_LOGI(TAG, "BUTTON State: LOW" );
+		// }
 		if(pin_level == GPIO_PIN_RESET){
 			p_button->time += BUTTON_TIME_DELAY;
 		}

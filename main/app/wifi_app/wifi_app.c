@@ -22,7 +22,7 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "app_config.h"
-
+#include "dcom.h"
 extern EventGroupHandle_t event_group;
 static bool s_wifi_enable = true;
 
@@ -38,9 +38,13 @@ enum WIFI_MODE_t{
 
 #define WIFI_LOG printf
 //#define COM_PORT UART_PORT_DEF
+#if 1
 char DEFAULT_SSID[] = "Minh Tuan";
 char DEFAULT_PWD[] = "j12345678";
-
+#else
+char DEFAULT_SSID[] = "Tang3 NhaSo3";
+char DEFAULT_PWD[] = "0988378362";
+#endif
 static const char* TAG = "WIFI";
 
 #if CONFIG_EXAMPLE_WIFI_ALL_CHANNEL_SCAN
@@ -62,12 +66,6 @@ static const char* TAG = "WIFI";
 #define DEFAULT_RSSI -127
 #define DEFAULT_AUTHMODE WIFI_AUTH_OPEN
 
-
-#if MODE_AP_STA
-#define AP_SSID "selex_bss"
-#define AP_PASS "smart_electric"
-#define AP_CHANNEL 10
-#endif
 static wifi_event_t wifi_event = WIFI_EVENT_STA_DISCONNECTED;
 static void dcom_state_control(void *arg);	
 //static void wifi_set_info(uint8_t *ssid, uint8_t *pass);
@@ -85,8 +83,8 @@ void found_callback(const char *name, const ip_addr_t *ipaddr, void *callback_ar
 
 uint16_t num_connect = 0;
 uint16_t num_retry =0;
-#define  MAX_NUM_CONNECT 10
-#define MAX_NUM_RETRY 10
+#define  MAX_NUM_CONNECT 30
+#define MAX_NUM_RETRY 3
 static void event_handler(void *arg, esp_event_base_t event_base,
 		int32_t event_id, void *event_data);
 static void event_handler_smartconfig(void *arg, esp_event_base_t event_base,
@@ -108,8 +106,10 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 		if(num_connect == MAX_NUM_CONNECT){
 			ESP_LOGI(TAG,"Wifi connect timeout, reset wifi...\r\n");
 			esp_wifi_stop();
-			vTaskDelay(1000 / portTICK_PERIOD_MS);
+			DCOM_OFF
+			vTaskDelay(3000 / portTICK_PERIOD_MS);
 			ESP_LOGI(TAG,"Wifi reconnect...\r\n");
+			DCOM_ON
 			esp_wifi_start();
 			num_connect = 0;
 			num_retry++;
@@ -120,7 +120,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 			esp_wifi_stop();
 			vTaskDelay(100 / portTICK_PERIOD_MS);
-			esp_restart();
+			esp_deep_sleep_start();
 			vTaskDelay(1000 / portTICK_PERIOD_MS);
 		}
 		wifi_sta_mod = WF_DISCONNECT_AP;
@@ -131,7 +131,6 @@ static void event_handler(void *arg, esp_event_base_t event_base,
 	}
 	else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
 		vTaskDelay(100 / portTICK_PERIOD_MS); // delay 5s from led off
-		//dns_gethostbyname("https://www.google.com.vn",NULL, found_callback, NULL);
 		wifi_event = WIFI_EVENT_STA_CONNECTED;
 		wifi_sta_mod = WF_CONNECTED_AP;
 		xQueueSend(wifi_queue_sta_handle,&wifi_sta_mod,(TickType_t)portMAX_DELAY);

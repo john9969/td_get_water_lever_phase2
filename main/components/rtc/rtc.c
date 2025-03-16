@@ -2,7 +2,7 @@
 #include "esp_log.h"
 #include "gpio_hw.h"
 #include <string.h>
-
+#include "config_app.h"
 static const char* TAG = "RTC"; 
 RTC_Alarm rtc_alarm;
 RTC_DateTime rtc_time;
@@ -15,7 +15,7 @@ void RTC_init(void* arx){
     RTC_DateTime * p_rtc = (RTC_DateTime*) arx;
     // p_rtc->rtc_task = NULL;
     pcf8563_reset_alarm(&pcf8563_dev); //clear alarm and set RTC to normal mode.
-    RTC_set_alarm(PCF8563_ALARM_DONT_CARE,10);
+    RTC_set_alarm(ALARM_HOUR,ALARM_MINUTE);
 #if ENABLE_TEST_ALARM
     //GPIO btn_pin = {.pin = BUTTON_GPIO_PIN, .mode = GPIO_INPUT,.pull_en = PULL_UP_EN};
     //GPIO wake_up_pin = {.pin = WAKEUP_PIN, .mode = GPIO_INPUT,.pull_en = PULL_UP_EN};
@@ -87,14 +87,28 @@ void RTC_task()
 }
 #endif
 
+int RTC_get_minute(void * arx){
+    RTC_DateTime * p_rtc = (RTC_DateTime*) arx;
+    RTC_get_time(p_rtc);
+    return p_rtc->minute;
+}
+
 char * RTC_get_time_string(void* arx){
+    RTC_DateTime * p_rtc = (RTC_DateTime*) arx;
+    if(RTC_get_time(p_rtc) != ESP_OK){
+        return "";
+    }
+    char * timeStr = (char*)malloc(20);
+    sprintf(timeStr,"%d-%d-%d %d:%d:%d", p_rtc->year, p_rtc->month, p_rtc->day, p_rtc->hour, p_rtc->minute, p_rtc->second);
+    return timeStr;
+}
+esp_err_t RTC_get_time(void* arx){
     RTC_DateTime * p_rtc = (RTC_DateTime*) arx;
     struct tm time;
     esp_err_t err = pcf8563_get_time(&pcf8563_dev, &time);
     if(err != ESP_OK){
         ESP_LOGE(TAG,"Error reading time from RTC");
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        return "";
+        return err;
     }
     p_rtc->year = time.tm_year;
     p_rtc->month = time.tm_mon;
@@ -102,14 +116,7 @@ char * RTC_get_time_string(void* arx){
     p_rtc->hour = time.tm_hour;
     p_rtc->minute = time.tm_min;
     p_rtc->second = time.tm_sec;
-    
-    char * timeStr = (char*)malloc(20);
-    sprintf(timeStr,"%d-%d-%d %d:%d:%d", p_rtc->year, p_rtc->month, p_rtc->day, p_rtc->hour, p_rtc->minute, p_rtc->second);
-    return timeStr;
-}
-RTC_DateTime RTC_get_time(void* arx){
-    RTC_DateTime * p_rtc = (RTC_DateTime*) arx;
-    return *p_rtc;
+    return ESP_OK;
 }
 /**
  * @brief Set time for RTC from string
@@ -143,4 +150,9 @@ void RTC_set_alarm(uint8_t alarm_hour,uint8_t alarm_minute){
     if(ESP_OK == pcf8563_set_alarm(&pcf8563_dev, &time)){
         ESP_LOGI(TAG,"Set alarm success");
     }
+}
+
+esp_err_t RTC_reset_alarm(void* arg){
+    (void)arg;
+    return pcf8563_reset_alarm(&pcf8563_dev);
 }

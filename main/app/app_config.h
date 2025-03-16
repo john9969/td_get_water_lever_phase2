@@ -10,9 +10,9 @@
 
 
 
-#define SERIAL_NUMBER "TD_MW_0006(Test)"
+#define SERIAL_NUMBER "TD_MW_0006"
 
-#define API_UPDATE_TIME "http://donuoctrieuduong.xyz/dev_test/get_time.php"
+#define API_UPDATE_TIME "http://donuoctrieuduong.xyz/dev_test/get_time_test.php"
 #define API_POST_WATER "http://donuoctrieuduong.xyz/dev_test/water_lever.php"
 #if ENABLE_OTA
     #define API_OTA "https://"
@@ -33,7 +33,7 @@
 #define ENABLE_OTA                                                  (0)
 
 #if ENABLE_OTA
-    #define APP_VERSION 											(2.5)
+    #define APP_VERSION 											(1.0)
 #endif
 
 #define WF_CONNECTED_BIT BIT0
@@ -46,4 +46,6 @@
 #define CONNECT_BIT BIT1
 #define BUTTON_STATE_BIT BIT2
 #define MAX_NUM_ERROR                                                (10)   // Maximum number of errors that can be stored  
+#define ALARM_HOUR (0x80)
+#define ALARM_MINUTE (0)
 #endif /* MAIN_APP_APP_CONFIG_H_ */

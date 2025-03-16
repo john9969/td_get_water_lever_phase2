@@ -26,7 +26,9 @@ void config_app_deinit(void * arg){
 }
 #define TIMEOUT_CONFIG_MODE (5000*60)
 #define TIME_CONFIG_MODE_COUNT (5000)
+#define TIME_RE_ON_SENSOR (30000)
 static int  timeout_config_mode_count = TIMEOUT_CONFIG_MODE;
+static int timeout_re_on_sensor = 0;
 void config_app_process(void *arg){
     ConfigApp * p_config_app = (ConfigApp *)arg;
     for(;;){
@@ -38,6 +40,7 @@ void config_app_process(void *arg){
                 ESP_LOGI(TAG,"Config app init");
                 break;
             case STATE_ON_SENSOR:
+                lazer_sensor_on(&lazer_sensor);
                 vTaskDelay(5000 / portTICK_PERIOD_MS);
                 ESP_LOGI(TAG,"Config app on sensor");
                 p_config_app->state = STATE_ON_DCOM;
@@ -48,6 +51,13 @@ void config_app_process(void *arg){
                 DCOM_ON
                 break;
                 case STATE_WAITNG:
+                if(timeout_re_on_sensor < TIME_RE_ON_SENSOR){
+                    timeout_re_on_sensor += TIME_RE_ON_SENSOR;
+                }
+                else {
+                    timeout_re_on_sensor = 0;
+                    p_config_app->state = STATE_ON_SENSOR;
+                }
                 // get time and post info to  server 
                 timeout_config_mode_count -= TIME_CONFIG_MODE_COUNT;
                 ESP_LOGI(TAG,"in config mode, Couunt down: %d to sleep",timeout_config_mode_count);

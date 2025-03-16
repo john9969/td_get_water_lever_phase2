@@ -13,6 +13,7 @@ static int old_error_times = 0;
 void led_control_task(void *arg) {
     led_control_t * p_led = (led_control_t*) arg;
     while (1) {
+        //ESP_LOGI(TAG, "Led State: %d", p_led->state);
         if (p_led->state != LED_BLINK_ERR       && 
             p_led->state != LED_BLINK_CONFIG    && 
             p_led->times > 0)    
@@ -86,6 +87,7 @@ void led_deinit(void * arx) {
 } 
 
 bool set_led_state(void * arx, led_state_t state, int times) {
+    ESP_LOGI(TAG,"Has set Led State: %d", state);
     led_control_t* p_led_control = (led_control_t*) arx;
     if((p_led_control->state == state) && (state != LED_BLINK_ERR)) {
         ESP_LOGI(TAG, "LED state is already %d", state);
@@ -110,7 +112,7 @@ void signal_new_error(void * arg) {
 
 void led_init(void * arx) {
     led_control_t * p_led = (led_control_t*) arx;    
-    set_led_state(p_led,LED_BLINK_1000MS,3);
+    //set_led_state(p_led,LED_BLINK_1000MS,3);
     xTaskCreate(led_control_task, "LED Control Task", 1024, p_led, 1, &(p_led->led_task));
 }
 #if TEST_LED

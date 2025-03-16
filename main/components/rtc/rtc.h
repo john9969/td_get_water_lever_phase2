@@ -34,8 +34,10 @@ void RTC_init(void* arx);
 void RTC_deinit(void* arx); 
 void RTC_set_time_from_string(const char* timeStr);
 char * RTC_get_time_string(void* arx);
-RTC_DateTime RTC_get_time(void* arx);
+int RTC_get_minute(void * arx);
+esp_err_t RTC_get_time(void* arx);
 void RTC_set_alarm(uint8_t alarm_hour,uint8_t alarm_minute);
+esp_err_t RTC_reset_alarm(void* arg);
 extern RTC_Alarm rtc_alarm;
 extern RTC_DateTime rtc_time;
 
