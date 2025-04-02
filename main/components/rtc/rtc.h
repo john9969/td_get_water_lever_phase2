@@ -7,7 +7,7 @@
 #include "freertos/queue.h" 
 #include "hw_pcf8563.h"    // RTC library
 
-#define ENABLE_TEST_ALARM 1
+#define ENABLE_TEST_ALARM 0
 
 // Structure to hold time and date information
 typedef struct {

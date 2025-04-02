@@ -15,7 +15,14 @@ void RTC_init(void* arx){
     RTC_DateTime * p_rtc = (RTC_DateTime*) arx;
     // p_rtc->rtc_task = NULL;
     pcf8563_reset_alarm(&pcf8563_dev); //clear alarm and set RTC to normal mode.
-    RTC_set_alarm(ALARM_HOUR,ALARM_MINUTE);
+    int currentMin = RTC_get_minute(p_rtc);
+    int nextAlarmMin = 0;
+    if (currentMin < 15) nextAlarmMin = 15;
+    else if (currentMin < 30) nextAlarmMin = 30;
+    else if (currentMin < 45) nextAlarmMin = 45;
+    else nextAlarmMin = 0;
+    
+    RTC_set_alarm(ALARM_HOUR,nextAlarmMin);
 #if ENABLE_TEST_ALARM
     //GPIO btn_pin = {.pin = BUTTON_GPIO_PIN, .mode = GPIO_INPUT,.pull_en = PULL_UP_EN};
     //GPIO wake_up_pin = {.pin = WAKEUP_PIN, .mode = GPIO_INPUT,.pull_en = PULL_UP_EN};
