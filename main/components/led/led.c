@@ -10,26 +10,31 @@ static const char TAG_TEST[] = "LED_TEST";
 #endif // DEBUG
 
 static int old_error_times = 0;
-void led_control_task(void *arg) {
+static void led_control_task(void *arg) {
     led_control_t * p_led = (led_control_t*) arg;
+    ESP_LOGI(TAG, "LED Control Task started");
     while (1) {
-        //ESP_LOGI(TAG, "Led State: %d", p_led->state);
+        ESP_LOGI(TAG, "Led State: %d", p_led->state);
         if (p_led->state != LED_BLINK_ERR       && 
             p_led->state != LED_BLINK_CONFIG    && 
             p_led->times > 0)    
         {
+            ESP_LOGI(TAG, "LED times-: %d", p_led->times);
             p_led->times--;
         }
         else if (p_led->state != LED_BLINK_ERR  && 
                 p_led->state != LED_BLINK_CONFIG && 
                 p_led->times == 0) 
         {
+            ESP_LOGI(TAG, "Delay 1000ms");
             vTaskDelay(pdMS_TO_TICKS(1000));   
             continue;
         }
-
+        ESP_LOGI(TAG, "LED State: %d", p_led->state);
+        ESP_LOGI(TAG, "LED times: %d", p_led->times);
         switch (p_led->state){
             case LED_OFF:
+                ESP_LOGI(TAG, "LED OFF");
                 gpio_pin_write(&led_signal, GPIO_PIN_SET);      //LED OFF
                 if(old_error_times >0){
                     old_error_times =0;
@@ -41,13 +46,16 @@ void led_control_task(void *arg) {
                 vTaskDelay(pdMS_TO_TICKS(1000));
                 break;
             case LED_ON:
+                ESP_LOGI(TAG, "LED ON");
                 gpio_pin_write(&led_signal, GPIO_PIN_RESET);      //LED ON
                 ESP_LOGI(TAG, "LED ON");
                 vTaskDelay(pdMS_TO_TICKS(1000));
                 break;
             case LED_BLINK_CONFIG:
+                ESP_LOGI(TAG, "LED BLINK Led config");
                 gpio_pin_write(&led_signal, GPIO_PIN_RESET);      //LED ON
                 vTaskDelay(pdMS_TO_TICKS(200));
+                ESP_LOGI(TAG, "LED BLINK Led config");
                 gpio_pin_write(&led_signal, GPIO_PIN_SET);      //LED OFF
                 vTaskDelay(pdMS_TO_TICKS(200));
                 break;
@@ -113,7 +121,9 @@ void signal_new_error(void * arg) {
 void led_init(void * arx) {
     led_control_t * p_led = (led_control_t*) arx;    
     //set_led_state(p_led,LED_BLINK_1000MS,3);
-    xTaskCreate(led_control_task, "LED Control Task", 1024, p_led, 1, &(p_led->led_task));
+    ESP_LOGI(TAG, "LED Init");
+    xTaskCreate(led_control_task, "LED Control Task", 1024*4, p_led, 5 , &p_led->led_task);
+
 }
 #if TEST_LED
 void test_led(void * arx) {
