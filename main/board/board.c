@@ -12,7 +12,7 @@
 #include "esp_err.h"
 #include "esp_event.h"
 #include "adc_hw.h"
-char auther_str[50] = {NULL};
+char auther_str[50];
 
 
 void board_init(void){
@@ -22,6 +22,7 @@ void board_init(void){
 	}
 	flash_init();
 	drv_timer_init();
+	memset(auther_str,0,sizeof(auther_str));
 	int size = flash_read_str("auther", auther_str);
 	if(size == -1){
 		uint32_t auther = esp_random();

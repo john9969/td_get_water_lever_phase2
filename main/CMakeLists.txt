@@ -27,7 +27,7 @@ file (GLOB app_service "service/*c"
 			"service/i2c/*c"
 			"service/http/*c"
 			"service/tiny-json/*c"
-	)
+			)
 
 idf_component_register(
     SRCS 	${board_source}
@@ -68,10 +68,11 @@ idf_component_register(
 	REQUIRES            nvs_flash
 						esp_timer
 						esp_wifi
-						wpa_supplicant
+						#wpa_supplicant
 						mqtt
 						spiffs
 						esp_http_client
+						esp_event
 						# optional, list the public requirements (component names)
     PRIV_REQUIRES       # optional, list the private requirements
 )

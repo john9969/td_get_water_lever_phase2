@@ -57,7 +57,6 @@ void wifi_app_deinit(void);
 #include "esp_event.h"
 #include "nvs_flash.h"
 #include "esp_smartconfig.h"
-#include "esp_wpa2.h"
 #include "esp_system.h"
 #include "esp_netif.h"
 
